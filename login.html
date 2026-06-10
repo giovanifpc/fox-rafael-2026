@@ -217,6 +217,30 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 const SUPA_URL = 'https://jxwodkpssivmcnbrsukm.supabase.co';
 const SUPA_KEY = 'sb_publishable_agSM3r3S7rb333VEmW2tiQ_Ng6GYV3K';
 
+// ── Processar token do magic link na URL ────────────────
+async function processAuthCallback(){
+  const hash = window.location.hash;
+  if(!hash) return false;
+  
+  const params = new URLSearchParams(hash.substring(1));
+  const access_token = params.get('access_token');
+  const refresh_token = params.get('refresh_token');
+  
+  if(!access_token) return false;
+  
+  // Salvar sessão
+  localStorage.setItem('fox_session', JSON.stringify({
+    access_token,
+    refresh_token,
+    expires_at: Date.now() + (3600 * 1000)
+  }));
+  
+  // Limpar hash da URL e redirecionar
+  window.history.replaceState(null, '', window.location.pathname);
+  window.location.href = 'index.html';
+  return true;
+}
+
 // ── Verificar se já tem sessão ativa ────────────────────
 async function checkSession(){
   try{
@@ -264,7 +288,7 @@ async function sendMagicLink(){
       body: JSON.stringify({
         email: email,
         options:{
-          emailRedirectTo: 'https://giovanifpc.github.io/fox-rafael-2026/'
+          emailRedirectTo: 'https://giovanifpc.github.io/fox-app/'
         }
       })
     });
